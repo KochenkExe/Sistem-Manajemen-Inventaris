@@ -41,6 +41,7 @@ RUN npm install && npm run build
 
 # Copy config files
 COPY nginx.conf /etc/nginx/http.d/default.conf
+COPY php-fpm.conf /usr/local/etc/php-fpm.d/zz-custom.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Set permissions

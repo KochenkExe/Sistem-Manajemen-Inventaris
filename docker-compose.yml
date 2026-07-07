@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: telkomsel_inventory_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+    networks:
+      - db_network
+
+networks:
+  db_network:
+    name: postgresql_default
+    external: true

@@ -42,12 +42,17 @@ RUN npm install && npm run build
 # Copy config files
 COPY nginx.conf /etc/nginx/http.d/default.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY php-fpm.conf /usr/local/etc/php-fpm.d/zz-custom.conf
+
+# Strip CRLF (carriage returns) from scripts and configs to avoid Linux shell errors
+RUN sed -i 's/\r$//' start.sh nginx.conf supervisord.conf php-fpm.conf
 
 # Setup startup script
 RUN chmod +x start.sh
 
 # Set permissions
 RUN chown -R www-data:www-data /app \
+    && chmod -R 755 /app \
     && chmod -R 755 /app/storage \
     && chmod -R 755 /app/bootstrap/cache
 

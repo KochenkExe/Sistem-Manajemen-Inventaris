@@ -6,7 +6,7 @@ Sistem Manajemen Inventaris berbasis web yang dirancang khusus untuk mengelola d
 
 ## 🔗 Link Demo & Hosting
 
-*   **Link Live Demo (VPS / Hosting)**: *[Masukkan URL Hosting / Live Demo Anda di sini]*
+*   **Link Live Demo (Railway)**: [https://sistem-manajemen-inventaris-production.up.railway.app](https://sistem-manajemen-inventaris-production.up.railway.app)
 
 ---
 
@@ -418,3 +418,22 @@ File ini berisi seluruh struktur tabel (DDL) beserta data seed awal (roles, user
 # Restore ke database PostgreSQL lokal / VPS Anda
 PGPASSWORD=<password> psql -h <host> -U <user> -d <database> < database/database_dump.sql
 ```
+
+---
+
+## ☁️ Deployment ke Railway
+
+Proyek ini telah dikonfigurasi sepenuhnya untuk dideploy langsung ke **Railway** menggunakan arsitektur web server produksi **Nginx + PHP-FPM + Supervisor**.
+
+### Fitur Cloud Deployment:
+1. **Dynamic Port Binding**: Skrip startup `start.sh` mendeteksi port dinamis yang diberikan Railway (`$PORT`) dan menyunting konfigurasi Nginx secara otomatis agar mendengarkan port yang tepat (serta port cadangan `8000`).
+2. **Automated Migrations & Conditional Seeding**: Setiap kontainer berjalan, sistem otomatis mengeksekusi migrasi database (`php artisan migrate --force`). Seeding (`php artisan db:seed`) hanya akan dijalankan jika database kosong untuk menghindari kegagalan entri ganda.
+3. **Environment Forwarding**: Konfigurasi PHP-FPM diatur dengan `clear_env = no` untuk meneruskan seluruh variabel lingkungan dari Railway (seperti database credentials dan `APP_KEY`) ke Laravel di runtime.
+4. **SSL/TLS & HTTPS Force**: Otorisasi HTTPS dipaksakan secara otomatis di lingkungan produksi melalui `URL::forceScheme('https')` pada `AppServiceProvider.php` guna menghindari masalah *Mixed Content* di peramban (browser).
+
+### Langkah Men-deploy Mandiri ke Railway:
+1. Hubungkan repositori GitHub Anda ke proyek baru di Railway.
+2. Tambahkan layanan **PostgreSQL** di Railway.
+3. Sambungkan variabel lingkungan di layanan web Anda dengan PostgreSQL (gunakan sintaks referensi Railway seperti `DB_HOST=${{Postgres.PGHOST}}`, dsb).
+4. Pastikan kolom **Start Command** di tab **Settings** layanan web Anda di Railway dikosongkan (agar Railway membaca instruksi `start.sh` dari `Dockerfile` kita).
+5. Railway akan mendeteksi `Dockerfile`, mem-build image berbasis Alpine Linux, lalu menjalankan server produksi secara instan.

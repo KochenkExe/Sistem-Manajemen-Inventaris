@@ -1,4 +1,4 @@
-FROM php:8.4-cli-alpine
+FROM php:8.4-fpm-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -10,7 +10,9 @@ RUN apk add --no-cache \
     zip \
     unzip \
     git \
-    bash
+    bash \
+    nginx \
+    supervisor
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -37,11 +39,18 @@ RUN composer dump-autoload --optimize
 RUN apk add --no-cache nodejs npm
 RUN npm install && npm run build
 
+# Copy config files
+COPY nginx.conf /etc/nginx/http.d/default.conf
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Setup startup script
+RUN chmod +x start.sh
+
 # Set permissions
 RUN chown -R www-data:www-data /app \
     && chmod -R 755 /app/storage \
     && chmod -R 755 /app/bootstrap/cache
 
-EXPOSE ${PORT:-8000}
+EXPOSE 8000
 
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
+CMD ["/bin/sh", "start.sh"]

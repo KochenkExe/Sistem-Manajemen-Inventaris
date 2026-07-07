@@ -1,8 +1,12 @@
 #!/bin/sh
 
-# 1. Sesuaikan port listen Nginx secara dinamis dengan port yang diberikan Railway
-echo "Mengubah port listen Nginx ke ${PORT:-8000}..."
-sed -i "s/listen 8000;/listen ${PORT:-8000};/g" /etc/nginx/http.d/default.conf
+# 1. Sesuaikan port listen Nginx secara dinamis dengan port yang diberikan Railway (dan pertahankan port 8000)
+if [ -n "${PORT}" ] && [ "${PORT}" != "8000" ]; then
+    echo "Mengatur Nginx untuk mendengarkan di port 8000 dan ${PORT}..."
+    sed -i "s/listen 8000;/listen 8000; listen ${PORT};/g" /etc/nginx/http.d/default.conf
+else
+    echo "Mengatur Nginx untuk mendengarkan di port 8000..."
+fi
 
 # 2. Jalankan migrasi database
 echo "Menjalankan migrasi database..."
